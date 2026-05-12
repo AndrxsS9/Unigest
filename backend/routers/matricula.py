@@ -104,3 +104,36 @@ def mis_materias(
         ))
 
     return resultado
+
+@router.delete("/matricula/{matricula_id}")
+def withdraw_course(
+    matricula_id: int,
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user)
+):
+    """Allows a student to withdraw from an active course."""
+    if current_user.rol != "estudiante":
+        raise HTTPException(status_code=403, detail="Only students can withdraw from courses")
+
+    enrollment = db.query(models.Matricula).filter(
+        models.Matricula.id == matricula_id,
+        models.Matricula.estudiante_id == current_user.id
+    ).first()
+
+    if not enrollment:
+        raise HTTPException(status_code=404, detail="Enrollment not found")
+
+    if enrollment.estado != "activa":
+        raise HTTPException(status_code=400, detail="Course is already withdrawn")
+
+    if enrollment.nota_definitiva is not None:
+        raise HTTPException(status_code=400, detail="Cannot withdraw if a final grade is registered")
+
+    enrollment.estado = "retirada"
+    
+    course = enrollment.materia
+    course.cupos_disponibles += 1
+
+    db.commit()
+
+    return {"mensaje": "Materia retirada con éxito"}

@@ -53,6 +53,15 @@ def matricular(materia_id: int):
     return response.json(), response.status_code
 
 
+def withdraw_course(matricula_id: int):
+    """Withdraws a student from an enrolled course."""
+    response = httpx.delete(
+        f"{BASE_URL}/matricula/{matricula_id}",
+        headers=get_headers()
+    )
+    return response.json(), response.status_code
+
+
 # ── Notas ─────────────────────────────────────────────
 
 def get_mis_estudiantes(materia_id: int):

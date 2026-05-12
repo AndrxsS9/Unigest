@@ -7,7 +7,7 @@ import sys
 import os
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
-from utils.api_client import get_mis_materias, get_materias, matricular, get_kardex
+from utils.api_client import get_mis_materias, get_materias, matricular, get_kardex, withdraw_course
 
 
 def mostrar_dashboard_estudiante():
@@ -33,10 +33,25 @@ def mostrar_dashboard_estudiante():
         mis_materias = get_mis_materias()
 
         if mis_materias:
-            df = pd.DataFrame(mis_materias)
-            df_display = df[["nombre", "codigo", "creditos", "horario", "salon", "nota_definitiva", "estado"]]
-            df_display.columns = ["Materia", "Código", "Créditos", "Horario", "Salón", "Nota", "Estado"]
-            st.dataframe(df_display, use_container_width=True, hide_index=True)
+            for m in mis_materias:
+                with st.container(border=True):
+                    col1, col2, col3 = st.columns([3, 1, 1])
+                    with col1:
+                        st.markdown(f"**{m['nombre']}** ({m['codigo']})")
+                        st.caption(f"📅 {m['horario']} | 🏫 {m['salon']}")
+                    with col2:
+                        nota_str = f"{m['nota_definitiva']}" if m['nota_definitiva'] is not None else "N/A"
+                        st.metric("Nota", nota_str)
+                        st.write(f"Estado: **{m['estado']}**")
+                    with col3:
+                        if m['estado'] == 'activa' and m['nota_definitiva'] is None:
+                            if st.button("Retirar", key=f"ret_{m['id']}"):
+                                resp, code = withdraw_course(m['id'])
+                                if code == 200:
+                                    st.success(resp.get("mensaje", "¡Materia retirada!"))
+                                    st.rerun()
+                                else:
+                                    st.error(resp.get("detail", "Error al retirar la materia"))
         else:
             st.info("No estás matriculado en ninguna materia aún.")
 
