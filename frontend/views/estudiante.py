@@ -1,0 +1,92 @@
+# frontend/views/estudiante.py
+# Dashboard del estudiante
+
+import streamlit as st
+import pandas as pd
+import sys
+import os
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+from utils.api_client import get_mis_materias, get_materias, matricular, get_kardex
+
+
+def mostrar_dashboard_estudiante():
+    """Muestra el dashboard completo del estudiante."""
+
+    # Sidebar
+    with st.sidebar:
+        st.markdown(f"### 🎓 {st.session_state.nombre}")
+        st.markdown("**Rol:** Estudiante")
+        if st.button("🚪 Cerrar sesión", use_container_width=True):
+            for key in list(st.session_state.keys()):
+                del st.session_state[key]
+            st.rerun()
+
+    st.title("📚 Panel del Estudiante")
+
+    # Pestañas
+    tab1, tab2, tab3 = st.tabs(["📋 Mis Materias", "➕ Matricularme", "📊 Mi Kardex"])
+
+    # ── Tab 1: Mis Materias ───────────────────────────
+    with tab1:
+        st.subheader("Mis materias matriculadas")
+        mis_materias = get_mis_materias()
+
+        if mis_materias:
+            df = pd.DataFrame(mis_materias)
+            df_display = df[["nombre", "codigo", "creditos", "horario", "salon", "nota_definitiva", "estado"]]
+            df_display.columns = ["Materia", "Código", "Créditos", "Horario", "Salón", "Nota", "Estado"]
+            st.dataframe(df_display, use_container_width=True, hide_index=True)
+        else:
+            st.info("No estás matriculado en ninguna materia aún.")
+
+    # ── Tab 2: Matricularme ───────────────────────────
+    with tab2:
+        st.subheader("Materias disponibles")
+        materias = get_materias()
+
+        if materias:
+            for materia in materias:
+                with st.container(border=True):
+                    col1, col2, col3 = st.columns([3, 1, 1])
+                    with col1:
+                        st.markdown(f"**{materia['nombre']}** ({materia['codigo']})")
+                        st.caption(f"📅 {materia['horario']} | 🏫 {materia['salon']} | 👨‍🏫 {materia['profesor']}")
+                    with col2:
+                        st.metric("Cupos", materia['cupos_disponibles'])
+                    with col3:
+                        st.metric("Créditos", materia['creditos'])
+                        if st.button("Matricularme", key=f"mat_{materia['id']}"):
+                            resp, code = matricular(materia['id'])
+                            if code == 200:
+                                st.success(resp.get("mensaje", "¡Matriculado!"))
+                                st.rerun()
+                            else:
+                                st.error(resp.get("detail", "Error al matricularse"))
+        else:
+            st.info("No hay materias disponibles.")
+
+    # ── Tab 3: Kardex ─────────────────────────────────
+    with tab3:
+        st.subheader("Mi Kardex Académico")
+        kardex = get_kardex()
+
+        if kardex:
+            # Métricas
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                st.metric("📈 Promedio", kardex.get("promedio_acumulado", "N/A"))
+            with col2:
+                st.metric("✅ Créditos Aprobados", kardex.get("creditos_aprobados", 0))
+            with col3:
+                st.metric("📝 Créditos Matriculados", kardex.get("creditos_matriculados", 0))
+
+            st.markdown("---")
+
+            # Tabla de materias
+            if kardex.get("materias"):
+                df = pd.DataFrame(kardex["materias"])
+                df.columns = ["Materia", "Código", "Créditos", "Nota", "Estado"]
+                st.dataframe(df, use_container_width=True, hide_index=True)
+        else:
+            st.info("No hay información en tu kardex.")
