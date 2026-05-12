@@ -54,7 +54,7 @@ def matricular(materia_id: int):
 
 
 def withdraw_course(matricula_id: int):
-    """Withdraws a student from an enrolled course."""
+    """Retira al estudiante de una materia matriculada."""
     response = httpx.delete(
         f"{BASE_URL}/matricula/{matricula_id}",
         headers=get_headers()
