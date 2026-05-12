@@ -9,6 +9,7 @@ import os
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 from utils.api_client import get_materias, get_mis_estudiantes, registrar_nota
+from utils.icons import icon_html
 
 
 def mostrar_dashboard_profesor():
@@ -16,9 +17,9 @@ def mostrar_dashboard_profesor():
 
     # Sidebar
     with st.sidebar:
-        st.markdown(f"### 👨‍🏫 {st.session_state.nombre}")
+        st.markdown(f"### {icon_html('professor')} {st.session_state.nombre}", unsafe_allow_html=True)
         st.markdown("**Rol:** Profesor")
-        if st.button("🚪 Cerrar sesión", use_container_width=True):
+        if st.button("Cerrar sesión", use_container_width=True):
             for key in list(st.session_state.keys()):
                 del st.session_state[key]
             st.rerun()
@@ -31,15 +32,18 @@ def mostrar_dashboard_profesor():
 
         if mis_materias:
             nombres = [m["nombre"] for m in mis_materias]
-            materia_seleccionada = st.selectbox("📚 Selecciona materia", nombres)
+            materia_seleccionada = st.selectbox("Selecciona materia", nombres)
             materia_actual = next(m for m in mis_materias if m["nombre"] == materia_seleccionada)
         else:
             st.warning("No tienes materias asignadas.")
             return
 
-    st.title("📊 Panel del Profesor")
+    st.title("Panel del Profesor")
     st.subheader(f"Materia: {materia_actual['nombre']} ({materia_actual['codigo']})")
-    st.caption(f"📅 {materia_actual['horario']} | 🏫 {materia_actual['salon']}")
+    st.markdown(
+        f"<div style='color:#6c757d;font-size:0.95rem;'>{icon_html('calendar')} {materia_actual['horario']} | {icon_html('school')} {materia_actual['salon']}</div>",
+        unsafe_allow_html=True,
+    )
 
     st.markdown("---")
 
@@ -51,7 +55,7 @@ def mostrar_dashboard_profesor():
         return
 
     # ── Tabla de estudiantes y registro de notas ──────
-    st.subheader("📋 Estudiantes matriculados")
+    st.subheader("Estudiantes matriculados")
 
     for est in estudiantes:
         with st.container(border=True):
@@ -73,7 +77,7 @@ def mostrar_dashboard_profesor():
                     value=nota_actual if nota_actual else 0.0,
                     key=f"nota_{est['matricula_id']}"
                 )
-                if st.button("💾 Guardar", key=f"save_{est['matricula_id']}"):
+                if st.button("Guardar", key=f"save_{est['matricula_id']}"):
                     resp, code = registrar_nota(est["matricula_id"], nueva_nota)
                     if code == 200:
                         st.success(f"Nota guardada: {nueva_nota}")
@@ -87,7 +91,7 @@ def mostrar_dashboard_profesor():
     notas_existentes = [e["nota_definitiva"] for e in estudiantes if e.get("nota_definitiva") is not None]
 
     if notas_existentes:
-        st.subheader("📈 Distribución de notas")
+        st.subheader("Distribución de notas")
 
         col1, col2 = st.columns(2)
         with col1:

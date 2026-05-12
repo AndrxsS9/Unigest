@@ -7,16 +7,19 @@ import os
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 from utils.api_client import login
+from utils.icons import icon_html
 
 
 def mostrar_login():
     """Muestra la pantalla de inicio de sesión."""
-    st.markdown("## 🔐 Iniciar Sesión")
+    st.markdown(f"## {icon_html('lock')} Iniciar Sesión", unsafe_allow_html=True)
     st.markdown("---")
 
     with st.form("login_form"):
-        email = st.text_input("📧 Correo institucional", placeholder="usuario@uni.edu")
-        password = st.text_input("🔑 Contraseña", type="password")
+        st.markdown(f"{icon_html('mail')} **Correo institucional**", unsafe_allow_html=True)
+        email = st.text_input("", placeholder="usuario@uni.edu")
+        st.markdown(f"{icon_html('shield')} **Contraseña**", unsafe_allow_html=True)
+        password = st.text_input("", type="password", label="")
         submit = st.form_submit_button("Ingresar", use_container_width=True)
 
     if submit:

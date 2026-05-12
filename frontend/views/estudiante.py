@@ -8,6 +8,7 @@ import os
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 from utils.api_client import get_mis_materias, get_materias, matricular, get_kardex
+from utils.icons import icon_html
 
 
 def mostrar_dashboard_estudiante():
@@ -15,17 +16,17 @@ def mostrar_dashboard_estudiante():
 
     # Sidebar
     with st.sidebar:
-        st.markdown(f"### 🎓 {st.session_state.nombre}")
+        st.markdown(f"### {icon_html('graduation_cap')} {st.session_state.nombre}", unsafe_allow_html=True)
         st.markdown("**Rol:** Estudiante")
-        if st.button("🚪 Cerrar sesión", use_container_width=True):
+        if st.button("Cerrar sesión", use_container_width=True):
             for key in list(st.session_state.keys()):
                 del st.session_state[key]
             st.rerun()
 
-    st.title("📚 Panel del Estudiante")
+    st.title("Panel del Estudiante")
 
     # Pestañas
-    tab1, tab2, tab3 = st.tabs(["📋 Mis Materias", "➕ Matricularme", "📊 Mi Kardex"])
+    tab1, tab2, tab3 = st.tabs(["Mis Materias", "Matricularme", "Mi Kardex"])
 
     # ── Tab 1: Mis Materias ───────────────────────────
     with tab1:
@@ -51,7 +52,10 @@ def mostrar_dashboard_estudiante():
                     col1, col2, col3 = st.columns([3, 1, 1])
                     with col1:
                         st.markdown(f"**{materia['nombre']}** ({materia['codigo']})")
-                        st.caption(f"📅 {materia['horario']} | 🏫 {materia['salon']} | 👨‍🏫 {materia['profesor']}")
+                        st.markdown(
+                            f"<div style='color:#6c757d;font-size:0.95rem;'>{icon_html('calendar')} {materia['horario']} | {icon_html('school')} {materia['salon']} | {icon_html('professor')} {materia['profesor']}</div>",
+                            unsafe_allow_html=True,
+                        )
                     with col2:
                         st.metric("Cupos", materia['cupos_disponibles'])
                     with col3:
@@ -75,11 +79,11 @@ def mostrar_dashboard_estudiante():
             # Métricas
             col1, col2, col3 = st.columns(3)
             with col1:
-                st.metric("📈 Promedio", kardex.get("promedio_acumulado", "N/A"))
+                st.metric("Promedio", kardex.get("promedio_acumulado", "N/A"))
             with col2:
-                st.metric("✅ Créditos Aprobados", kardex.get("creditos_aprobados", 0))
+                st.metric("Créditos Aprobados", kardex.get("creditos_aprobados", 0))
             with col3:
-                st.metric("📝 Créditos Matriculados", kardex.get("creditos_matriculados", 0))
+                st.metric("Créditos Matriculados", kardex.get("creditos_matriculados", 0))
 
             st.markdown("---")
 

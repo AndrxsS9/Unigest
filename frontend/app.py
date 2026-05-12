@@ -11,11 +11,12 @@ sys.path.insert(0, os.path.dirname(__file__))
 from views.login import mostrar_login
 from views.estudiante import mostrar_dashboard_estudiante
 from views.profesor import mostrar_dashboard_profesor
+from utils.icons import PAGE_ICON_URI
 
 # ── Configuración de la página ────────────────────────
 st.set_page_config(
     page_title="UniGest — Gestión Universitaria",
-    page_icon="🎓",
+    page_icon=PAGE_ICON_URI,
     layout="wide"
 )
 
