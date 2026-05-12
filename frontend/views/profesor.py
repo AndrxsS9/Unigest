@@ -27,7 +27,8 @@ def mostrar_dashboard_profesor():
         st.markdown("---")
 
         # Obtener materias del profesor
-        todas_materias = get_materias()
+        with st.spinner("Cargando materias..."):
+            todas_materias = get_materias()
         mis_materias = [m for m in todas_materias if m.get("profesor") == st.session_state.nombre]
 
         if mis_materias:
@@ -48,7 +49,8 @@ def mostrar_dashboard_profesor():
     st.markdown("---")
 
     # Obtener estudiantes
-    estudiantes = get_mis_estudiantes(materia_actual["id"])
+    with st.spinner("Cargando lista de estudiantes..."):
+        estudiantes = get_mis_estudiantes(materia_actual["id"])
 
     if not estudiantes:
         st.info("No hay estudiantes matriculados en esta materia.")
@@ -78,12 +80,13 @@ def mostrar_dashboard_profesor():
                     key=f"nota_{est['matricula_id']}"
                 )
                 if st.button("Guardar", key=f"save_{est['matricula_id']}"):
-                    resp, code = registrar_nota(est["matricula_id"], nueva_nota)
+                    with st.spinner("Guardando nota..."):
+                        resp, code = registrar_nota(est["matricula_id"], nueva_nota)
                     if code == 200:
-                        st.success(f"Nota guardada: {nueva_nota}")
+                        st.toast(f"Nota guardada: {nueva_nota}", icon="✅")
                         st.rerun()
                     else:
-                        st.error(resp.get("detail", "Error al guardar nota"))
+                        st.toast(resp.get("detail", "Error al guardar nota"), icon="❌")
 
     st.markdown("---")
 
@@ -107,9 +110,29 @@ def mostrar_dashboard_profesor():
             nbins=10,
             labels={"x": "Nota", "y": "Cantidad"},
             title="Distribución de notas",
-            color_discrete_sequence=["#636EFA"]
+            color_discrete_sequence=["#0d6efd"]
         )
         fig.update_layout(bargap=0.1)
-        st.plotly_chart(fig, use_container_width=True)
+        
+        # Gráfico de pastel (Aprobados vs Reprobados)
+        reprobados = len(notas_existentes) - aprobados
+        df_pie = pd.DataFrame({
+            "Estado": ["Aprobados", "Reprobados"],
+            "Cantidad": [aprobados, reprobados]
+        })
+        fig_pie = px.pie(
+            df_pie, 
+            values='Cantidad', 
+            names='Estado', 
+            title="Proporción Aprobados/Reprobados", 
+            color='Estado', 
+            color_discrete_map={"Aprobados":"#198754", "Reprobados":"#dc3545"}
+        )
+        
+        col_chart1, col_chart2 = st.columns(2)
+        with col_chart1:
+            st.plotly_chart(fig, use_container_width=True)
+        with col_chart2:
+            st.plotly_chart(fig_pie, use_container_width=True)
     else:
         st.info("Aún no hay notas registradas para mostrar estadísticas.")

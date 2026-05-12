@@ -20,6 +20,48 @@ st.set_page_config(
     layout="wide"
 )
 
+# ── Estilos CSS Globales ──────────────────────────────
+st.markdown("""
+<style>
+    /* Fondo general */
+    .stApp {
+        background-color: #f8f9fa;
+    }
+    
+    /* Contenedores tipo tarjeta */
+    [data-testid="stVerticalBlockBorderWrapper"] {
+        background-color: #ffffff;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        padding: 1.5rem;
+        border: 1px solid #e9ecef;
+        margin-bottom: 1rem;
+    }
+    
+    /* Botones primarios */
+    .stButton > button {
+        border-radius: 8px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    .stButton > button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    
+    /* Titulos */
+    h1, h2, h3 {
+        color: #2b3035;
+        font-weight: 700;
+    }
+    
+    /* Métricas */
+    [data-testid="stMetricValue"] {
+        color: #0d6efd;
+    }
+</style>
+""", unsafe_allow_html=True)
+
 # ── Inicializar estado de sesión ──────────────────────
 if "token" not in st.session_state:
     st.session_state.token = None
